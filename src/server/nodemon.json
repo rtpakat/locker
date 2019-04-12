@@ -1,0 +1,7 @@
+{
+    "env":{
+        "MONGO_USER":"admin",
+        "MONGO_PASSWORD":"niteW9ZFmchb89j",
+        "MONGO_DB":"lockers-react-dev"
+    }
+}
