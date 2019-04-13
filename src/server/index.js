@@ -7,45 +7,36 @@ const mongoose = require("mongoose");
 const User = require("../client/models/user");
 const _ = require("lodash");
 // const bcrypt = require("bcryptjs");
-const Locker = [
-  { s: "1", m: "2", l: "3" },
-  { s: "4", m: "5", l: "6" },
-  { s: "7", m: "8", l: "9" },
-  { s: "10", m: "11", l: "12" }
-];
 
 const sizes = [
   {
-    s: {
-      price: 200,
-      nextMinute: 2
-    }
+    name: "s",
+    price: 50,
+    nextMinute: 25
   },
   {
-    m: {
-      price: 500,
-      nextMinute: 5
-    }
+    name: "m",
+    price: 100,
+    nextMinute: 50
   },
   {
-    l: {
-      price: 500,
-      nextMinute: 5
-    }
+    name: "l",
+    price: 200,
+    nextMinute: 100
   }
 ];
 const lockers = [
   { id: 1, name: "locker1", status: 1, size: "s" },
-  { id: 2, name: "locker2", status: 1, size: "m" },
-  { id: 3, name: "locker3", status: 1, size: "l" },
-  { id: 4, name: "locker4", status: 1, size: "s" },
-  { id: 5, name: "locker5", status: 1, size: "m" },
-  { id: 6, name: "locker6", status: 1, size: "l" },
-  { id: 7, name: "locker7", status: 1, size: "s" },
-  { id: 8, name: "locker8", status: 1, size: "m" },
-  { id: 9, name: "locker9", status: 1, size: "l" },
-  { id: 10, name: "locker10", status: 1, size: "s" },
-  { id: 11, name: "locker11", status: 1, size: "m" },
+  { id: 2, name: "locker2", status: 2, size: "m" },
+  { id: 3, name: "locker3", status: 0, size: "l" },
+  { id: 4, name: "locker4", status: 0, size: "s" },
+  { id: 5, name: "locker5", status: 0, size: "m" },
+  { id: 6, name: "locker6", status: 0, size: "l" },
+  { id: 7, name: "locker7", status: 2, size: "s" },
+  { id: 8, name: "locker8", status: 2, size: "m" },
+  { id: 9, name: "locker9", status: 2, size: "l" },
+  { id: 10, name: "locker10", status: 2, size: "s" },
+  { id: 11, name: "locker11", status: 2, size: "m" },
   { id: 12, name: "locker12", status: 1, size: "l" }
 ];
 
@@ -58,9 +49,11 @@ const schema = buildASTSchema(gql`
     lockers: [Locker]
     locker(id: ID): Locker
     User: [User!]!
+    size(input: String): Size
   }
   type Mutation {
     createUser(usersInput: UsersInput): User
+    changeLockerStatus(lockerId: ID!, status: Int): Locker
   }
 
   enum STATUS {
@@ -69,14 +62,10 @@ const schema = buildASTSchema(gql`
     RESERVED
   }
 
-  type SizeDetail {
-    price: Float
-    nextMinute: Float
-  }
-
   type Size {
-    id: ID!
-    detail: SizeDetail
+    price: Int
+    name: Int
+    nextMinute: Int
   }
 
   type Locker {
@@ -94,7 +83,7 @@ const schema = buildASTSchema(gql`
 
   schema {
     query: Query
-    mutation: Mutation
+    # mutation: Mutation
   }
 `);
 
@@ -103,6 +92,7 @@ const mapCoin = (locker, id) => locker && { id, ...locker };
 const root = {
   lockers: () => lockers.map(mapCoin),
   locker: ({ id }) => mapCoin(lockers[id], id),
+  size: async ({input}) =>  await sizes.filter(size => size.name == input)[0],
   User: () => {
     return User.find()
       .then(users => {
@@ -114,6 +104,14 @@ const root = {
         throw err;
       });
   },
+  // changeLockerStatus: ({lockerId, status}) => {
+  //   let locker = lockers.find(locker => locker.id == lockerId);
+  //   locker.status = status;
+  //   return locker;
+
+  //   //TODO: INSERT TO MONGODB
+   
+  // },
   createUser: args => {
     return User.findOne({ email: args.usersInput.email })
       .then(user => {
