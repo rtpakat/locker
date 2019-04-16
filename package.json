@@ -21,7 +21,6 @@
     "moment": "^2.24.0",
     "mongoose": "^5.5.0",
     "npm": "^6.9.0",
-    "npm-run-all": "^4.1.3",
     "popper.js": "^1.15.0",
     "react": "^16.8.6",
     "react-apollo": "2.1.11",
@@ -29,7 +28,8 @@
     "react-final-form": "3.6.5",
     "react-router-dom": "^5.0.0",
     "react-scripts": "2.1.8",
-    "reactstrap": "6.4.0"
+    "reactstrap": "6.4.0",
+    "npm-run-all": "4.1.3"
   },
   "scripts": {
     "start": "npm-run-all --parallel watch:server start:web",
@@ -38,7 +38,8 @@
     "watch:server": "nodemon --watch src/server src/server",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "heroku-postbuild": "npm run build"
   },
   "eslintConfig": {
     "extends": "react-app"
