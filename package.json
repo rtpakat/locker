@@ -18,12 +18,8 @@
     "jquery": "^3.4.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.11",
-<<<<<<< HEAD
-    "mongoose": "^5.5.1",
-=======
     "moment": "^2.24.0",
     "mongoose": "^5.5.0",
->>>>>>> add-mutation
     "npm": "^6.9.0",
     "popper.js": "^1.15.0",
     "react": "^16.8.6",
