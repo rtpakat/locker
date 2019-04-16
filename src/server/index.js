@@ -5,47 +5,40 @@ const gql = require("graphql-tag");
 const { buildASTSchema } = require("graphql");
 const mongoose = require("mongoose");
 const User = require("../client/models/user");
+const Locker = require("../client/models/lockers");
+const jwt = require('jsonwebtoken');
 const _ = require("lodash");
-// const bcrypt = require("bcryptjs");
-const Locker = [
-  { s: "1", m: "2", l: "3" },
-  { s: "4", m: "5", l: "6" },
-  { s: "7", m: "8", l: "9" },
-  { s: "10", m: "11", l: "12" }
-];
+const bcrypt = require("bcryptjs");
 
 const sizes = [
   {
-    s: {
-      price: 200,
-      nextMinute: 2
-    }
+    name: "s",
+    price: 50,
+    nextMinute: 25
   },
   {
-    m: {
-      price: 500,
-      nextMinute: 5
-    }
+    name: "m",
+    price: 100,
+    nextMinute: 50
   },
   {
-    l: {
-      price: 500,
-      nextMinute: 5
-    }
+    name: "l",
+    price: 200,
+    nextMinute: 100
   }
 ];
 const lockers = [
   { id: 1, name: "locker1", status: 1, size: "s" },
-  { id: 2, name: "locker2", status: 1, size: "m" },
-  { id: 3, name: "locker3", status: 1, size: "l" },
-  { id: 4, name: "locker4", status: 1, size: "s" },
-  { id: 5, name: "locker5", status: 1, size: "m" },
-  { id: 6, name: "locker6", status: 1, size: "l" },
-  { id: 7, name: "locker7", status: 1, size: "s" },
-  { id: 8, name: "locker8", status: 1, size: "m" },
-  { id: 9, name: "locker9", status: 1, size: "l" },
-  { id: 10, name: "locker10", status: 1, size: "s" },
-  { id: 11, name: "locker11", status: 1, size: "m" },
+  { id: 2, name: "locker2", status: 2, size: "m" },
+  { id: 3, name: "locker3", status: 0, size: "l" },
+  { id: 4, name: "locker4", status: 0, size: "s" },
+  { id: 5, name: "locker5", status: 0, size: "m" },
+  { id: 6, name: "locker6", status: 0, size: "l" },
+  { id: 7, name: "locker7", status: 2, size: "s" },
+  { id: 8, name: "locker8", status: 2, size: "m" },
+  { id: 9, name: "locker9", status: 2, size: "l" },
+  { id: 10, name: "locker10", status: 2, size: "s" },
+  { id: 11, name: "locker11", status: 2, size: "m" },
   { id: 12, name: "locker12", status: 1, size: "l" }
 ];
 
@@ -58,9 +51,12 @@ const schema = buildASTSchema(gql`
     lockers: [Locker]
     locker(id: ID): Locker
     User: [User!]!
+    size(input: String): Size,
+    login(email: String!, password: String!): AuthData!
   }
   type Mutation {
     createUser(usersInput: UsersInput): User
+    changeLockerStatus(lockerId: ID!, status: Int): Locker
   }
 
   enum STATUS {
@@ -69,14 +65,10 @@ const schema = buildASTSchema(gql`
     RESERVED
   }
 
-  type SizeDetail {
-    price: Float
-    nextMinute: Float
-  }
-
   type Size {
-    id: ID!
-    detail: SizeDetail
+    price: Int
+    name: Int
+    nextMinute: Int
   }
 
   type Locker {
@@ -91,6 +83,11 @@ const schema = buildASTSchema(gql`
     email: String!
     password: String
   }
+  type AuthData {
+  userId: ID!
+  token: String!
+  tokenExpiration: Int!
+}
 
   schema {
     query: Query
@@ -103,6 +100,7 @@ const mapCoin = (locker, id) => locker && { id, ...locker };
 const root = {
   lockers: () => lockers.map(mapCoin),
   locker: ({ id }) => mapCoin(lockers[id], id),
+  size: async ({input}) =>  await sizes.filter(size => size.name == input)[0],
   User: () => {
     return User.find()
       .then(users => {
@@ -114,13 +112,29 @@ const root = {
         throw err;
       });
   },
+  changeLockerStatus: ({lockerId, status}) => {
+    let locker = lockers.find(locker => locker.id == lockerId)
+    locker.status = status;
+    console.log(locker);
+    const lockerss = new Locker({
+      id:lockerId,
+      name:locker.name,
+      status:status,
+      size:locker.size
+    });
+    console.log(lockerss);
+    return lockerss.save()
+
+    //TODO: INSERT TO MONGODB
+   
+  },
   createUser: args => {
-    return User.findOne({ email: args.usersInput.email })
+    return User.findOne({ email: args.usersInput.email,password:args.usersInput.password })
       .then(user => {
         if (user) {
           throw new Error("User exists already.");
         }
-        // return bcrypt.hash(args.usersInput.password, 12);
+        return bcrypt.hash(args.usersInput.password, 12);
       })
       .then(hashedpassword => {
         const auhtLogin = new User({
@@ -135,21 +149,37 @@ const root = {
       .catch(err => {
         throw err;
       });
-
-    return auhtLogin
-      .save()
-      .then(result => {
-        console.log(result);
-        return { ...result._doc, _id: result._doc._id };
-      })
-      .catch(err => {
-        console.log(err);
-        throw err;
-      });
+  },
+  login: async ({ email, password }) => {
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      throw new Error('User does not exist!');
+    }
+    const isEqual = await bcrypt.compare(password, user.password);
+    if (!isEqual) {
+      throw new Error('Password is incorrect!');
+    }
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      'somesupersecretkey',
+      {
+        expiresIn: '1h'
+      }
+    );
+    return { userId: user.id, token: token, tokenExpiration: 1 };
   }
 };
 
 const app = express();
+app.use((req,res,next) =>{
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if(req.method === "OPTIONS"){
+    return res.sendStatus(200);
+  }
+  next();
+});
 app.use(cors());
 app.use(
   "/graphql",
