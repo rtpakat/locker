@@ -169,7 +169,7 @@ export default class postViewer extends Component {
                                     onClick={() => {
                                       this.handleCickReserveLocker(item,this.state.curTime);
                                     }}
-                                    color="default"
+                                    color="primary"
                                   >
                                     Aviable
                                   </Button>
