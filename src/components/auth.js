@@ -75,11 +75,19 @@ class AuthPage extends Component {
   render() {
     return (
       <form className="auth-form" onSubmit={this.submitHandler}>
+<<<<<<< HEAD
         <div>
           <label htmlFor="email">E-Mail</label>
           <input className="form-control" type="email" id="email" ref={this.emailEl} />
         </div>
         <div>
+=======
+        <div className="form-control">
+          <label htmlFor="email">E-Mail</label>
+          <input className="form-control" type="email" id="email" ref={this.emailEl} />
+        </div>
+        <div className="form-control">
+>>>>>>> 1451015e0465178fea83428d6d2d0df5dae236a7
           <label htmlFor="password">Password</label>
           <input className="form-control" type="password" id="password" ref={this.passwordEl} />
         </div>
