@@ -2,6 +2,10 @@
   "name": "locker",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node":"8.10.0",
+    "npm":"3.5.2"
+  },
   "dependencies": {
     "apollo-boost": "0.1.16",
     "axios": "^0.18.0",
@@ -31,7 +35,7 @@
     "reactstrap": "6.4.0"
   },
   "scripts": {
-    "start": "npm-run-all --parallel watch:server start:web",
+    "start": "start:web",
     "start:web": "react-scripts start",
     "start:server": "node src/server",
     "watch:server": "nodemon --watch src/server src/server",
