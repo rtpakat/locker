@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import gql from "graphql-tag";
-import { Query, Mutation } from "react-apollo";
+import { Query } from "react-apollo";
 import { Table } from "reactstrap";
 import _ from "lodash";
 
@@ -52,16 +52,16 @@ export default class postViewer extends Component {
     this.state = {
       amount: 0,
       modal: false,
-      coins: [1, 2, 5, 10, 20, 50, 100, 500, 1000],
-      points: new Array(9),
+      coins: [1000, 500, 100, 50, 20, 10, 5, 2, 1],
+      points: new Array(8),
       locker: {},
-      charge: 0,
-      curTime:0,
-      seconds:0,
-      minutes:0,
-      pay:60,
-      totalSeconds : 0,
-      refreshIntervalId:""
+      curTime: 0,
+      seconds: 0,
+      minutes: 0,
+      pay: 60,
+      changeamount: 0,
+      totalSeconds: 0,
+      refreshIntervalId: ""
     };
     this.handleCickReserveLocker = this.handleCickReserveLocker.bind(this);
     this.disableModal = this.disableModal.bind(this);
@@ -69,12 +69,12 @@ export default class postViewer extends Component {
   }
 
   componentDidMount() {
-    this.state.refreshIntervalId = setInterval( () => {
+    this.state.refreshIntervalId = setInterval(() => {
       this.setState({
-        curTime : this.state.totalSeconds++,
-        minutes:Math.floor(this.state.curTime / 60)
-      })
-    },1000)
+        curTime: this.state.totalSeconds++,
+        minutes: Math.floor(this.state.curTime / 60)
+      });
+    }, 1000);
     console.log(this.state.curTime);
   }
 
@@ -101,43 +101,50 @@ export default class postViewer extends Component {
 
   clear() {
     this.setState({ amount: 0 });
+    this.setState({ changeamount: 0 });
   }
   reserved(amount, lockers) {
-    var changeamount =0;
-    changeamount = amount-this.state.pay;
-    var changeamount;
-    var a = changeamount / 1000;
-    var b = 500;
-    var c = 100;
-    var d = 50;
-    var _1000 = 0;
-    var _500 = 0;
-    var _100 = 0;
-    var _50 = 0;
+    this.state.changeamount = amount - this.state.pay;
+    this.setState({ changeamount:amount - this.state.pay});
+    var pay = new Array(10);
+    var i;
 
-    a = Math.floor(a);
-    _1000 = a;
-    a = 1000 * a;
-    a = changeamount - a;
+    for (i = 0; i < pay.length; i++) {
+      pay[i] = this.state.changeamount / this.state.coins[i];
+      pay[i] = Math.floor(pay[i]);
+      this.state.changeamount =
+        this.state.changeamount - pay[i] * this.state.coins[i];
+    }
 
-    a = a / b;
-    a = Math.floor(a);
-    _500 = a;
-    a = 500 * a;
-    a = changeamount - _1000 * 1000 - a;
-
-    a = a / c;
-    a = Math.floor(a);
-    _100 = a;
-    a = 100 * a;
-    a = changeamount - _1000 * 1000 - _500 * 500 - a;
-
-    a = a / d;
-    a = Math.floor(a);
-    _50 = a;
-    a = 50 * a;
-    a = changeamount - _1000 * 1000 - _500 * 500 - _100 * 100 - a;
-    alert(a + "\r\n" + "_1000: " + _1000 + "\r\n" + "_500: " + _500 + "\r\n" + "_100: " + _100 + "\r\n" + "_50: " + _50);
+    alert(
+        "_1000: " +
+        pay[0] +
+        "\r\n" +
+        "_500: " +
+        pay[1] +
+        "\r\n" +
+        "_100: " +
+        pay[2] +
+        "\r\n" +
+        "_50: " +
+        pay[3] +
+        "\r\n" +
+        "_20: " +
+        pay[4] +
+        "\r\n" +
+        "_10: " +
+        pay[5] +
+        "\r\n" +
+        "_5: " +
+        pay[6] +
+        "\r\n" +
+        "_2: " +
+        pay[7] +
+        "\r\n" +
+        "_1: " +
+        pay[8] +
+        "\r\n"
+    );
   }
 
   render() {
@@ -167,7 +174,10 @@ export default class postViewer extends Component {
                                 {item.status == 0 ? (
                                   <Button
                                     onClick={() => {
-                                      this.handleCickReserveLocker(item,this.state.curTime);
+                                      this.handleCickReserveLocker(
+                                        item,
+                                        this.state.curTime
+                                      );
                                     }}
                                     color="primary"
                                   >
@@ -204,20 +214,20 @@ export default class postViewer extends Component {
                           !loading && (
                             <div>
                               <ModalHeader toggle={this.toggle}>
-                                Reserve{" "}
+                                Reserve Pay : {this.state.pay} {" -- "}
+                                Use Coin : {this.state.amount}{" "}
                               </ModalHeader>
                               <ModalBody>
                                 <h4>
-                                minutes : {this.state.minutes} seconds : {this.state.curTime}
-                                Pay : {this.state.pay} 
-                                  Amount : {this.state.amount}{" "}
+                                  minutes : {this.state.minutes} seconds :{" "}
+                                  {this.state.curTime}
                                   <div className="float-right">
                                     <Button onClick={() => this.clear()}>
                                       clear
                                     </Button>
                                   </div>
                                 </h4>
-                                <p>Charge coin:{this.state.charge}</p>
+                                <p>Charge coin:{this.state.changeamount}</p>
                                 <p>You are using {this.state.locker.name}</p>
 
                                 <p>
