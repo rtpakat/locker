@@ -38,7 +38,7 @@
   },
   "scripts": {
     "start": "npm-run-all --parallel watch:server start:web node index.js",
-  "heroku-postbuild": "cd client && npm install && npm run build",
+  "heroku-postbuild": "npm install && npm run build",
     "start:web": "react-scripts start",
     "start:server": "node src/server",
     "watch:server": "nodemon --watch src/server src/server",
