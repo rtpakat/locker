@@ -63,7 +63,7 @@ class AuthPage extends Component {
       };
     }
 
-    fetch('http://localhost:4000/graphql', {
+    fetch('http://localhost:5000/graphql', {
       method: 'POST',
       body: JSON.stringify(requestBody),
       headers: {
@@ -79,7 +79,6 @@ class AuthPage extends Component {
       .then(async resData => {
         this.setState({loginData:resData.data})
         await localStorage.setItem('login', JSON.stringify(resData.data));
-
         //console.log(resData);
       })
       .catch(err => {
