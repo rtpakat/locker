@@ -72,13 +72,15 @@ class AuthPage extends Component {
     })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
-          throw new Error('Failed!');
+          // throw new Error('Failed!');
+          alert("Can't Login");
         }
         return res.json();
       })
       .then(async resData => {
         this.setState({loginData:resData.data})
         await localStorage.setItem('login', JSON.stringify(resData.data));
+
         //console.log(resData);
       })
       .catch(err => {
@@ -92,7 +94,7 @@ class AuthPage extends Component {
     const {loginData} = this.state
   
     return (
-      loginData ? <p>{loginData.login.userId} <button type="button"  onClick={this.logout}>Logout</button></p> : 
+      loginData ? <p>{loginData.login.userId} <button type="button" onClick={this.logout}>Logout</button></p> : <p>Login</p>,
       <form className="auth-form" onSubmit={this.submitHandler}>
         <div>
           <label htmlFor="email">E-Mail</label>
