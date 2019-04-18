@@ -26,11 +26,12 @@
     "react-apollo": "2.1.11",
     "react-dom": "^16.8.6",
     "react-final-form": "3.6.5",
+    "react-router-dom": "^5.0.0",
     "react-scripts": "2.1.8",
     "reactstrap": "6.4.0"
   },
   "scripts": {
-    "start": "npm-run-all --parallel watch:server start:web",
+    "start": "node src/server/index.js",
     "start:web": "react-scripts start",
     "start:server": "node src/server",
     "watch:server": "nodemon --watch src/server src/server",
