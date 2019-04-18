@@ -206,17 +206,12 @@ mongoose
     console.log(err);
   });
 
-// app.use(favicon(__dirname + "/build/favicon.ico"));
-// // the __dirname is the current directory from where the script is running
-// app.use(express.static(__dirname));
-// app.use(express.static(path.join(__dirname, "build")));
-// app.get("/ping", function(req, res) {
-//   return res.send("pong");
-// });
-// app.get("/*", function(req, res) {
-//   res.sendFile(path.join(__dirname, "build", "index.html"));
-// });
+  app.use(express.static('public'));
 
-const port = process.env.PORT || 4000;
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
+  });
+
+const port = process.env.PORT || 5000;
 app.listen(port);
 console.log(`Running a GraphQL API server at localhost:${port}/graphql`);

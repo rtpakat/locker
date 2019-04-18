@@ -95,17 +95,16 @@ export default class postViewer extends Component {
           }
         `
       };
-
-      if (!this.state.isLogin) {
         requestBody = {
           query: `
-            mutation {
-              changeLockerStatus({lockerId: "${locker.id}", status:1}) {
-                email
-              }
+          mutation{
+            changeLockerStatus(lockerId:"${locker.id}",status:1){
+              name
+              status
+              size
             }
+          }
           `
-        };
       }
 
       fetch("http://localhost:4000/graphql", {
