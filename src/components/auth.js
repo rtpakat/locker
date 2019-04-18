@@ -63,7 +63,7 @@ class AuthPage extends Component {
       };
     }
 
-    fetch('http://localhost:5000/graphql', {
+    fetch('https://server-locker.herokuapp.com/graphql', {
       method: 'POST',
       body: JSON.stringify(requestBody),
       headers: {
