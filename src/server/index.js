@@ -50,6 +50,7 @@ const schema = buildASTSchema(gql`
   type Query {
     lockers: [Locker]
     locker(id: ID): Locker
+    Locker:Locker
     User: [User!]!
     size(input: String): Size
     login(email: String!, password: String!): AuthData!
@@ -96,6 +97,17 @@ const mapCoin = (locker, id) => locker && { id, ...locker };
 const root = {
   lockers: () => lockers.map(mapCoin),
   locker: ({ id }) => mapCoin(lockers[id], id),
+  Locker: () => {
+    return Locker.find()
+      .then(lockers  => {
+        return lockers.map(lockers  => {
+          return { ...lockers._doc, _id: lockers.id };
+        });
+      })
+      .catch(err => {
+        throw err;
+      });
+  },
   size: async ({ input }) => await sizes.filter(size => size.name == input)[0],
   User: () => {
     return User.find()
