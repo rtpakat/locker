@@ -3,7 +3,8 @@ import '../client/css/Auth.css';
 
 class AuthPage extends Component {
   state = {
-    isLogin: true
+    isLogin: true,
+    loginData: null
   };
 
   constructor(props) {
@@ -16,6 +17,17 @@ class AuthPage extends Component {
     this.setState(prevState => {
       return { isLogin: !prevState.isLogin };
     });
+  };
+
+
+  async componentDidMount(){
+    let loginDataFromLocalStorage = await JSON.parse(localStorage.getItem('login'));
+    this.setState({loginData: loginDataFromLocalStorage})
+  }
+
+  logout = () => {
+    this.setState({loginData:null})
+    localStorage.clear();
   };
 
   submitHandler = event => {
@@ -64,16 +76,24 @@ class AuthPage extends Component {
         }
         return res.json();
       })
-      .then(resData => {
-        console.log(resData);
+      .then(async resData => {
+        this.setState({loginData:resData.data})
+        await localStorage.setItem('login', JSON.stringify(resData.data));
+
+        //console.log(resData);
       })
       .catch(err => {
         console.log(err);
       });
   };
 
+
+
   render() {
+    const {loginData} = this.state
+  
     return (
+      loginData ? <p>{loginData.login.userId} <button type="button"  onClick={this.logout}>Logout</button></p> : 
       <form className="auth-form" onSubmit={this.submitHandler}>
         <div>
           <label htmlFor="email">E-Mail</label>

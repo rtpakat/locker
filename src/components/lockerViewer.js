@@ -81,7 +81,53 @@ export default class postViewer extends Component {
   handleCickReserveLocker(locker) {
     this.setState({ modal: true });
     this.setState({ locker: locker });
-    console.log(this.state.locker);
+    console.log(locker.status);
+    if (locker.status == 0) {
+      let requestBody = {
+        query: `
+          query {
+            locker(id: "${locker.id}") {
+              id
+              name
+              status
+              size
+            }
+          }
+        `
+      };
+
+      if (!this.state.isLogin) {
+        requestBody = {
+          query: `
+            mutation {
+              changeLockerStatus({lockerId: "${locker.id}", status:1}) {
+                email
+              }
+            }
+          `
+        };
+      }
+
+      fetch("http://localhost:4000/graphql", {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(res => {
+          if (res.status !== 200 && res.status !== 201) {
+            throw new Error("Failed!");
+          }
+          return res.json();
+        })
+        .then(resData => {
+          console.log(resData);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
   }
 
   handleCheckoutLocker(locker) {
@@ -105,7 +151,7 @@ export default class postViewer extends Component {
   }
   reserved(amount, lockers) {
     this.state.changeamount = amount - this.state.pay;
-    this.setState({ changeamount:amount - this.state.pay});
+    this.setState({ changeamount: amount - this.state.pay });
     var pay = new Array(10);
     var i;
 
@@ -117,7 +163,7 @@ export default class postViewer extends Component {
     }
 
     alert(
-        "_1000: " +
+      "_1000: " +
         pay[0] +
         "\r\n" +
         "_500: " +
@@ -187,7 +233,17 @@ export default class postViewer extends Component {
                                   undefined
                                 )}
                                 {item.status == 1 ? (
-                                  <Button color="warning">Pending</Button>
+                                  <Button
+                                    onClick={() => {
+                                      this.handleCickReserveLocker(
+                                        item,
+                                        this.state.curTime
+                                      );
+                                    }}
+                                    color="warning"
+                                  >
+                                    Pending
+                                  </Button>
                                 ) : (
                                   undefined
                                 )}
