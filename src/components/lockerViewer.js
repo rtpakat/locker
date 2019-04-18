@@ -88,11 +88,7 @@ export default class postViewer extends Component {
   handleCickReserveLocker(locker) {
     this.setState({ modal: true });
     this.setState({ locker: locker });
-    console.log(locker.status);
-  }
-
-  handleCheckoutLocker(locker) {
-    //TODO: Do something here
+    console.log(locker.status); 
   }
 
   disableModal() {
@@ -101,7 +97,6 @@ export default class postViewer extends Component {
 
   insertCoin(coin = 0) {
     //TODO: insert coin
-    console.log(coin);
     let oldAmount = this.state.amount;
     this.setState({ amount: oldAmount + coin });
   }

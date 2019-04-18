@@ -191,7 +191,6 @@ app.use(
 
 mongoose
   .connect(
-    //  "mongodb+srv://admindb:3L8MAWSuhSsKVDHvcluster0-andry.mongodb.net/test?retryWrites=true"
     // "mongodb+srv://admin:niteW9ZFmchb89j@cluster0-andry.mongodb.net/locker-react-dev?retryWrites=true",
     "mongodb://admindb:niteW9ZFmchb89j@ds111103.mlab.com:11103/server",
     { useNewUrlParser: true }
