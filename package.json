@@ -39,7 +39,7 @@
     "reactstrap": "6.4.0"
   },
   "scripts": {
-    "start": "node src/server/index.js",
+    "start": "react-scripts start node src/server/index.js",
     "start:web": "react-scripts start",
     "start:server": "node src/server",
     "watch:server": "nodemon --watch src/server src/server",
