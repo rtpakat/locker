@@ -30,7 +30,7 @@
     "reactstrap": "6.4.0"
   },
   "scripts": {
-    "start": "npm-run-all --parallel watch:server start:web",
+    "start": "npm-run-all --parallel watch:server start:web node src/server",
     "start:web": "react-scripts start",
     "start:server": "node src/server",
     "watch:server": "nodemon --watch src/server src/server",
