@@ -56,7 +56,7 @@ const schema = buildASTSchema(gql`
   }
   type Mutation {
     createUser(usersInput: UsersInput): User
-    changeLockerStatus(lockerId: ID!, status: Int,email:String): Locker
+    changeLockerStatus(lockerId: ID, status: Int,email:String): Locker
   }
 
   type Size {
@@ -80,6 +80,7 @@ const schema = buildASTSchema(gql`
   }
   type AuthData {
     userId: ID!
+    email:String!
     token: String!
     tokenExpiration: Int!
   }
@@ -140,6 +141,7 @@ const root = {
         return auhtLogin.save();
       })
       .then(result => {
+        console.log(result);
         return { ...result._doc, password: null, _id: result._doc._id };
       })
       .catch(err => {
@@ -162,7 +164,7 @@ const root = {
         expiresIn: "1h"
       }
     );
-    return { userId: user.id, token: token, tokenExpiration: 1 };
+    return { userId: user.id,email:user.email, token: token, tokenExpiration: 1 };
   }
 };
 
@@ -202,6 +204,6 @@ mongoose
   });
 
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 4000;
 app.listen(port);
 console.log(`Running a GraphQL API server at localhost:${port}/graphql`);
