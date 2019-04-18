@@ -1,4 +1,6 @@
 const express = require("express");
+const favicon = require('express-favicon');
+const path = require('path');
 const cors = require("cors");
 const graphqlHTTP = require("express-graphql");
 const gql = require("graphql-tag");
