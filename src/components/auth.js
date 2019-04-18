@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import '../client/css/Auth.css';
+import React, { Component } from "react";
+import "../client/css/Auth.css";
 
 class AuthPage extends Component {
   state = {
@@ -19,14 +19,17 @@ class AuthPage extends Component {
     });
   };
 
-
-  async componentDidMount(){
-    let loginDataFromLocalStorage = await JSON.parse(localStorage.getItem('login'));
-    this.setState({loginData: loginDataFromLocalStorage})
+  async componentDidMount() {
+    let loginDataFromLocalStorage = await JSON.parse(
+      localStorage.getItem("login")
+    );
+    if (loginDataFromLocalStorage) {
+      this.setState({ loginData: loginDataFromLocalStorage });
+    }
   }
 
   logout = () => {
-    this.setState({loginData:null})
+    this.setState({ loginData: null });
     localStorage.clear();
   };
 
@@ -63,11 +66,11 @@ class AuthPage extends Component {
       };
     }
 
-    fetch('https://server-locker.herokuapp.com/graphql', {
-      method: 'POST',
+    fetch("https://server-locker.herokuapp.com/graphql", {
+      method: "POST",
       body: JSON.stringify(requestBody),
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json"
       }
     })
       .then(res => {
@@ -81,36 +84,56 @@ class AuthPage extends Component {
         this.setState({loginData:resData.data})
         await localStorage.setItem('login', JSON.stringify(resData.data));
 
-        //console.log(resData);
+        console.log(resData);
       })
       .catch(err => {
         console.log(err);
       });
   };
 
-
-
   render() {
-    const {loginData} = this.state
-  
+    const { loginData } = this.state;
+
     return (
-      loginData ? <p>{loginData.login.userId} <button type="button" onClick={this.logout}>Logout</button></p> : <p>Login</p>,
-      <form className="auth-form" onSubmit={this.submitHandler}>
-        <div>
-          <label htmlFor="email">E-Mail</label>
-          <input className="form-control" type="email" id="email" ref={this.emailEl} />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input className="form-control" type="password" id="password" ref={this.passwordEl} />
-        </div>
-        <div className="form-actions">
-          <button type="submit">Submit</button>
-          <button type="button" onClick={this.switchModeHandler}>
-            Switch to {this.state.isLogin ? 'Signup' : 'Login'}
+      loginData ? (
+        <p>{loginData.login.userId}
+          <button type="button" onClick={this.logout}>
+            Logout
           </button>
+        </p>
+      ) : (
+        <div>
+        <p>Login</p>
+
+        <form className="auth-form" onSubmit={this.submitHandler}>
+          <div>
+            <label htmlFor="email">E-Mail</label>
+            <input
+              className="form-control"
+              type="email"
+              id="email"
+              ref={this.emailEl}
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Password</label>
+            <input
+              className="form-control"
+              type="password"
+              id="password"
+              ref={this.passwordEl}
+            />
+          </div>
+          <div className="form-actions">
+            <button type="submit">Submit</button>
+            <button type="button" onClick={this.switchModeHandler}>
+               {this.state.isLogin ="Login"}
+            </button>
+          </div>
+          
+        </form>
         </div>
-      </form>
+      )
     );
   }
 }

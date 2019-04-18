@@ -146,6 +146,7 @@ const root = {
         return auhtLogin.save();
       })
       .then(result => {
+        console.log(result);
         return { ...result._doc, password: null, _id: result._doc._id };
       })
       .catch(err => {
