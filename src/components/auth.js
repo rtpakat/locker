@@ -47,6 +47,7 @@ class AuthPage extends Component {
         query {
           login(email: "${email}", password: "${password}") {
             userId
+            email
             token
             tokenExpiration
           }
@@ -75,8 +76,7 @@ class AuthPage extends Component {
     })
       .then(res => {
         if (res.status !== 200 && res.status !== 201) {
-          // throw new Error('Failed!');
-          alert("Can't Login");
+          throw new Error('Failed!');
         }
         return res.json();
       })
@@ -96,7 +96,7 @@ class AuthPage extends Component {
 
     return (
       loginData ? (
-        <p>{loginData.login.userId}
+        <p>{loginData.login.email}
           <button type="button" onClick={this.logout}>
             Logout
           </button>

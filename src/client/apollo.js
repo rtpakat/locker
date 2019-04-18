@@ -1,5 +1,6 @@
 import ApolloClient from 'apollo-boost';
 
 export default new ApolloClient({
-  uri: "https://server-locker.herokuapp.com/graphql",
+  // uri: "http://localhost:5000/graphql",
+  uri: "https://server-locker.herokuapp.com/graphql"
 });

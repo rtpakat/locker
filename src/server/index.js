@@ -56,13 +56,7 @@ const schema = buildASTSchema(gql`
   }
   type Mutation {
     createUser(usersInput: UsersInput): User
-    changeLockerStatus(lockerId: ID!, status: Int): Locker
-  }
-
-  enum STATUS {
-    AVIABLE
-    PENDING
-    RESERVED
+    changeLockerStatus(lockerId: ID, status: Int,email:String): Locker
   }
 
   type Size {
@@ -76,6 +70,7 @@ const schema = buildASTSchema(gql`
     name: String
     status: Int
     size: String
+    email:String
   }
 
   type User {
@@ -85,6 +80,7 @@ const schema = buildASTSchema(gql`
   }
   type AuthData {
     userId: ID!
+    email:String!
     token: String!
     tokenExpiration: Int!
   }
@@ -112,15 +108,15 @@ const root = {
         throw err;
       });
   },
-  changeLockerStatus: ({ lockerId, status }) => {
+  changeLockerStatus: ({ lockerId, status,email }) => {
     let locker = lockers.find(locker => locker.id == lockerId);
     locker.status = status;
-    console.log(locker);
     const lockerss = new Locker({
       id: lockerId,
       name: locker.name,
       status: status,
-      size: locker.size
+      size: locker.size,
+      email:email
     });
     console.log(lockerss);
     return lockerss.save();
@@ -169,7 +165,7 @@ const root = {
         expiresIn: "1h"
       }
     );
-    return { userId: user.id, token: token, tokenExpiration: 1 };
+    return { userId: user.id,email:user.email, token: token, tokenExpiration: 1 };
   }
 };
 

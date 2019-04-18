@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
+import { Query,Mutation } from "react-apollo";
 import { Table } from "reactstrap";
 import _ from "lodash";
 
@@ -27,12 +27,13 @@ export const GET_LOCKER = gql`
 `;
 
 export const CHANGE_LOCKER_STATUS = gql`
-  mutation changeLockerStatus($lockerId: ID!, $status: Int) {
-    changeLockerStatus(lockerId: $lockerId, status: $status) {
+  mutation changeLockerStatus($lockerId: ID!, $status: Int,$email:String) {
+    changeLockerStatus(lockerId: $lockerId, status: $status,email:$email) {
       id
       name
       status
       size
+      email
     }
   }
 `;
@@ -58,75 +59,36 @@ export default class postViewer extends Component {
       curTime: 0,
       seconds: 0,
       minutes: 0,
-      pay: 60,
+      pay: 0,
       changeamount: 0,
       totalSeconds: 0,
-      refreshIntervalId: ""
+      refreshIntervalId: "",
+      loginData: null
     };
     this.handleCickReserveLocker = this.handleCickReserveLocker.bind(this);
     this.disableModal = this.disableModal.bind(this);
     this.insertCoin = this.insertCoin.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     this.state.refreshIntervalId = setInterval(() => {
       this.setState({
         curTime: this.state.totalSeconds++,
         minutes: Math.floor(this.state.curTime / 60)
       });
     }, 1000);
-    console.log(this.state.curTime);
+    let loginDataFromLocalStorage = await JSON.parse(
+      localStorage.getItem("login")
+    );
+    if (loginDataFromLocalStorage) {
+      this.setState({ loginData: loginDataFromLocalStorage });
+    }
   }
 
   handleCickReserveLocker(locker) {
     this.setState({ modal: true });
     this.setState({ locker: locker });
     console.log(locker.status);
-    if (locker.status == 0) {
-      let requestBody = {
-        query: `
-          query {
-            locker(id: "${locker.id}") {
-              id
-              name
-              status
-              size
-            }
-          }
-        `
-      };
-        requestBody = {
-          query: `
-          mutation{
-            changeLockerStatus(lockerId:"${locker.id}",status:1){
-              name
-              status
-              size
-            }
-          }
-          `
-      }
-
-      fetch("https://server-locker.herokuapp.com/graphql", {
-        method: "POST",
-        body: JSON.stringify(requestBody),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-        .then(res => {
-          if (res.status !== 200 && res.status !== 201) {
-            throw new Error("Failed!");
-          }
-          return res.json();
-        })
-        .then(resData => {
-          console.log(resData);
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    }
   }
 
   handleCheckoutLocker(locker) {
@@ -195,10 +157,10 @@ export default class postViewer extends Component {
   render() {
     return (
       <div>
-        <Query query={GET_LOCKER}>
+        <Query query={GET_LOCKER}>    
           {({ loading, data }) => {
             let lockerChunked = _.chunk(data.lockers, 3);
-            //  console.log(lockerChunked[0].id)
+            const { loginData } = this.state;
             return (
               !loading && (
                 <Container>
@@ -213,20 +175,19 @@ export default class postViewer extends Component {
                     <tbody>
                       {lockerChunked.map((locker, i) => {
                         return (
+                          <Mutation mutation={CHANGE_LOCKER_STATUS} key={i}>
+                          {(changeLockerStatus, { loading, error,data }) => (
                           <tr key={i}>
                             {locker.map((item, index) => (
                               <td key={index}>
                                 {item.status == 0 ? (
                                   <Button
-                                    onClick={() => {
-                                      this.handleCickReserveLocker(
-                                        item,
-                                        this.state.curTime
-                                      );
-                                    }}
+                                  onClick={() => {
+                                    changeLockerStatus({ variables: { lockerId:item.id, status: 1,email:loginData ?loginData.login.email:"null" } });
+                                  }}
                                     color="primary"
                                   >
-                                    Aviable
+                                    Reservations
                                   </Button>
                                 ) : (
                                   undefined
@@ -254,6 +215,8 @@ export default class postViewer extends Component {
                               </td>
                             ))}
                           </tr>
+                           )}
+                           </Mutation>
                         );
                       })}
                     </tbody>
@@ -264,6 +227,7 @@ export default class postViewer extends Component {
                       variables={{ input: this.state.locker.size }}
                     >
                       {({ loading, data }) => {
+                        
                         let { size } = data;
                         return (
                           !loading && (
@@ -284,7 +248,6 @@ export default class postViewer extends Component {
                                 </h4>
                                 <p>Charge coin:{this.state.changeamount}</p>
                                 <p>You are using {this.state.locker.name}</p>
-
                                 <p>
                                   Price: {size.price} THB per hour | next minute
                                   : {size.nextMinute} THB per minute
@@ -312,14 +275,19 @@ export default class postViewer extends Component {
                                 </Row>
                               </ModalBody>
                               <ModalFooter>
-                                <Button
+                              <Mutation mutation={CHANGE_LOCKER_STATUS}>
+                          {(changeLockerStatus, { loading, error,data }) => (
+                          !loading && (
+                            <div>
+                                 <Button
                                   color="primary"
                                   disabled={this.state.amount < size.price}
                                   onClick={() =>
                                     this.reserved(
                                       this.state.amount,
                                       this.state.locker,
-                                      this.state.curTime
+                                      this.state.curTime,
+                                      changeLockerStatus({ variables: { lockerId:this.state.locker.id, status: 0,email:loginData ?loginData.login.email:"null"} })
                                     )
                                   }
                                 >
@@ -331,6 +299,11 @@ export default class postViewer extends Component {
                                 >
                                   Cancel
                                 </Button>
+                            </div>
+                               
+                                )
+                                )}
+                                 </Mutation>
                               </ModalFooter>
                             </div>
                           )
@@ -338,10 +311,10 @@ export default class postViewer extends Component {
                       }}
                     </Query>
                   </Modal>
-                </Container>
-              )
-            );
-          }}
+                </Container>  
+              )  
+            );  
+          }}  
         </Query>
       </div>
     );
