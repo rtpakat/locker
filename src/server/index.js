@@ -6,7 +6,7 @@ const { buildASTSchema } = require("graphql");
 const mongoose = require("mongoose");
 const User = require("../client/models/user");
 const Locker = require("../client/models/lockers");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 const _ = require("lodash");
 const bcrypt = require("bcryptjs");
 
@@ -51,7 +51,7 @@ const schema = buildASTSchema(gql`
     lockers: [Locker]
     locker(id: ID): Locker
     User: [User!]!
-    size(input: String): Size,
+    size(input: String): Size
     login(email: String!, password: String!): AuthData!
   }
   type Mutation {
@@ -84,10 +84,10 @@ const schema = buildASTSchema(gql`
     password: String
   }
   type AuthData {
-  userId: ID!
-  token: String!
-  tokenExpiration: Int!
-}
+    userId: ID!
+    token: String!
+    tokenExpiration: Int!
+  }
 
   schema {
     query: Query
@@ -100,7 +100,7 @@ const mapCoin = (locker, id) => locker && { id, ...locker };
 const root = {
   lockers: () => lockers.map(mapCoin),
   locker: ({ id }) => mapCoin(lockers[id], id),
-  size: async ({input}) =>  await sizes.filter(size => size.name == input)[0],
+  size: async ({ input }) => await sizes.filter(size => size.name == input)[0],
   User: () => {
     return User.find()
       .then(users => {
@@ -112,24 +112,26 @@ const root = {
         throw err;
       });
   },
-  changeLockerStatus: ({lockerId, status}) => {
-    let locker = lockers.find(locker => locker.id == lockerId)
+  changeLockerStatus: ({ lockerId, status }) => {
+    let locker = lockers.find(locker => locker.id == lockerId);
     locker.status = status;
     console.log(locker);
     const lockerss = new Locker({
-      id:lockerId,
-      name:locker.name,
-      status:status,
-      size:locker.size
+      id: lockerId,
+      name: locker.name,
+      status: status,
+      size: locker.size
     });
     console.log(lockerss);
-    return lockerss.save()
+    return lockerss.save();
 
     //TODO: INSERT TO MONGODB
-   
   },
   createUser: args => {
-    return User.findOne({ email: args.usersInput.email,password:args.usersInput.password })
+    return User.findOne({
+      email: args.usersInput.email,
+      password: args.usersInput.password
+    })
       .then(user => {
         if (user) {
           throw new Error("User exists already.");
@@ -153,17 +155,17 @@ const root = {
   login: async ({ email, password }) => {
     const user = await User.findOne({ email: email });
     if (!user) {
-      throw new Error('User does not exist!');
+      throw new Error("User does not exist!");
     }
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
-      throw new Error('Password is incorrect!');
+      throw new Error("Password is incorrect!");
     }
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      'somesupersecretkey',
+      "somesupersecretkey",
       {
-        expiresIn: '1h'
+        expiresIn: "1h"
       }
     );
     return { userId: user.id, token: token, tokenExpiration: 1 };
@@ -171,11 +173,11 @@ const root = {
 };
 
 const app = express();
-app.use((req,res,next) =>{
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if(req.method === "OPTIONS"){
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
   next();
@@ -192,7 +194,7 @@ app.use(
 
 mongoose
   .connect(
-  //  "mongodb+srv://admindb:3L8MAWSuhSsKVDHvcluster0-andry.mongodb.net/test?retryWrites=true" 
+    //  "mongodb+srv://admindb:3L8MAWSuhSsKVDHvcluster0-andry.mongodb.net/test?retryWrites=true"
     "mongodb+srv://admin:niteW9ZFmchb89j@cluster0-andry.mongodb.net/locker-react-dev?retryWrites=true"
   )
   .then(() => {
@@ -202,6 +204,17 @@ mongoose
   .catch(err => {
     console.log(err);
   });
+
+app.use(favicon(__dirname + "/build/favicon.ico"));
+// the __dirname is the current directory from where the script is running
+app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, "build")));
+app.get("/ping", function(req, res) {
+  return res.send("pong");
+});
+app.get("/*", function(req, res) {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
 
 const port = process.env.PORT || 4000;
 app.listen(port);
