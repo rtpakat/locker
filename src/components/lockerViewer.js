@@ -83,13 +83,33 @@ export default class postViewer extends Component {
     if (loginDataFromLocalStorage) {
       this.setState({ loginData: loginDataFromLocalStorage });
     }
+
+    this.state.pay = setInterval(() => {
+      this.handleCickReserveLocker(this.state.locker,this.state.curTime)
+    },60000);
+    
   }
 
-  handleCickReserveLocker(locker) {
+  handleCickReserveLocker(locker,minutes) {
     this.setState({ modal: true });
     this.setState({ locker: locker });
-    console.log(locker.status); 
-  }
+    if(locker.size == "s"){
+      this.setState({pay:50})
+      if(minutes >=60){
+        this.setState({pay:this.state.pay+25})
+      }
+    }else if(locker.size == "m"){
+      this.setState({pay:100})
+      if(minutes >=60){
+        this.setState({pay:25})
+      }
+    }else{
+      this.setState({pay:200})
+      if(minutes >=60){
+        this.setState({pay:25})
+      }
+    }
+  } 
 
   disableModal() {
     this.setState({ modal: false });
@@ -105,7 +125,7 @@ export default class postViewer extends Component {
     this.setState({ amount: 0 });
     this.setState({ changeamount: 0 });
   }
-  reserved(amount, lockers) {
+  reserved(amount) {
     this.state.changeamount = amount - this.state.pay;
     this.setState({ changeamount: amount - this.state.pay });
     var pay = new Array(10);
@@ -179,6 +199,9 @@ export default class postViewer extends Component {
                                   <Button
                                   onClick={() => {
                                     changeLockerStatus({ variables: { lockerId:item.id, status: 1,email:loginData ?loginData.login.email:"null" } });
+                                    this.setState({curTime:0});
+                                    this.setState({minutes:0});
+                                    this.setState({pay:0});
                                   }}
                                     color="primary"
                                   >
@@ -192,7 +215,7 @@ export default class postViewer extends Component {
                                     onClick={() => {
                                       this.handleCickReserveLocker(
                                         item,
-                                        this.state.curTime
+                                        this.state.minutes
                                       );
                                     }}
                                     color="warning"
@@ -281,7 +304,6 @@ export default class postViewer extends Component {
                                     this.reserved(
                                       this.state.amount,
                                       this.state.locker,
-                                      this.state.curTime,
                                       changeLockerStatus({ variables: { lockerId:this.state.locker.id, status: 0,email:loginData ?loginData.login.email:"null"} })
                                     )
                                   }
