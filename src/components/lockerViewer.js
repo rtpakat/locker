@@ -95,17 +95,17 @@ export default class postViewer extends Component {
     this.setState({ locker: locker });
     if(locker.size == "s"){
       this.setState({pay:50})
-      if(minutes >=60){
+      if(minutes >60){
         this.setState({pay:this.state.pay+25})
       }
     }else if(locker.size == "m"){
       this.setState({pay:100})
-      if(minutes >=60){
+      if(minutes >60){
         this.setState({pay:25})
       }
     }else{
       this.setState({pay:200})
-      if(minutes >=60){
+      if(minutes >60){
         this.setState({pay:25})
       }
     }
