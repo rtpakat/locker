@@ -83,9 +83,9 @@ export default class postViewer extends Component {
     if (loginDataFromLocalStorage) {
       this.setState({ loginData: loginDataFromLocalStorage });
     }
-
-    this.state.pay = setInterval(() => {
-      this.handleCickReserveLocker(this.state.locker,this.state.curTime)
+    setInterval(() => {
+      this.handleCickReserveLocker(this.state.locker,this.state.curTime);
+      this.disableModal();
     },60000);
     
   }
@@ -101,12 +101,12 @@ export default class postViewer extends Component {
     }else if(locker.size == "m"){
       this.setState({pay:100})
       if(minutes >60){
-        this.setState({pay:25})
+        this.setState({pay:this.state.pay+50})
       }
     }else{
       this.setState({pay:200})
       if(minutes >60){
-        this.setState({pay:25})
+        this.setState({pay:this.state.pay+100})
       }
     }
   } 
@@ -174,7 +174,10 @@ export default class postViewer extends Component {
       <div>
         <Query query={GET_LOCKER}>    
           {({ loading, data }) => {
-            let lockerChunked = _.chunk(data.lockers, 3);
+            if(data === undefined || data === null){
+              return loading
+            }
+            let lockerChunked = _.chunk(  data.lockers, 3);
             const { loginData } = this.state;
             return (
               !loading && (
@@ -247,6 +250,9 @@ export default class postViewer extends Component {
                       {({ loading, data }) => {
                         
                         let { size } = data;
+                        if(data === undefined || data === null){
+                          return loading
+                        }
                         return (
                           !loading && (
                             <div>
@@ -294,7 +300,7 @@ export default class postViewer extends Component {
                               </ModalBody>
                               <ModalFooter>
                               <Mutation mutation={CHANGE_LOCKER_STATUS}>
-                          {(changeLockerStatus, { loading, error,data }) => (
+                          {(changeLockerStatus, { loading }) => (
                           !loading && (
                             <div>
                                  <Button
