@@ -84,7 +84,7 @@ export default class postViewer extends Component {
       this.setState({ loginData: loginDataFromLocalStorage });
     }
     setInterval(() => {
-      this.handleCickReserveLocker(this.state.locker,this.state.curTime);
+      this.handleCickReserveLocker(this.state.locker,this.state.minutes);
     },60000);
     
   }
